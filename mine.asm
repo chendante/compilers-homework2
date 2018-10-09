@@ -36,6 +36,15 @@ main_j PROC
     cmp cl,n
     jle @1
 
+
+; @1:
+;     cmp cl,n
+;     jle @2
+;     mul ecx
+;     inc ecx
+;     jmp @1
+; @2:
+
     mov f,eax
 
     invoke crt_printf, SADD("%d",0),f
