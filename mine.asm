@@ -1,39 +1,52 @@
-.486 ;使用486处理器
-.model flat,stdcall 
-include \masm32\include\msvcrt.inc
-includelib \masm32\lib\msvcrt.lib
+	.486
+	.model flat, stdcall
+	option casemap :none
 
+    include \masm32\macros\macros.asm
+    
+    include    \masm32\include\msvcrt.inc
+    includelib \masm32\lib\msvcrt.lib
 
-.data 
-result0 dd 1;存储最终结果
-inputdata dd ?;输入的阶乘的最大值
-type0 db '%d',0
-data4 db '请输入阶乘最大值ddddd: ',0
+    main PROTO
+    WaitKeyCrt PROTO
 
-data1 db '请输入阶乘最大值: ',0
-data2 db '阶乘结果为: ',0
-.code 
+.data
+    f dd 1
+    n  dd ?
+    newline   BYTE      13, 10, 0
+
+	.code
 start:
-invoke crt_printf,addr data1;打印字符串
-invoke crt_scanf,addr type0,addr inputdata;type0表示输入的格式，inputdata表示输入的值存在哪里
-mov eax,result0 
-mov ecx,2d 
-push eax
+    invoke main
+    invoke WaitKeyCrt
+    invoke crt__exit, 0
+    
+main PROC
+    invoke crt_printf,SADD("input:   ")
+    invoke crt_scanf, SADD("%d",0),addr n
 
-@@:;win32里面跳转的东西，目前不懂是什么，但是应该和@B联系，如果往下跳转应该是@F
-pop eax
-;mov eax,result0
-mul cx
-;mov result0,eax;其实两种方法都可以
-inc ecx
-push eax 
-cmp ecx,inputdata
-jle @B
+    mov eax,f 
+    mov ecx,2
+@1:
+    mul ecx
+    inc ecx 
+    cmp ecx,n
+    jle @1
 
-pop eax
-mov result0,eax
-invoke crt_printf,addr data2 
-invoke crt_printf,addr type0,result0
-ret
-;invoke crt__exit, 0 ;使用这个语句会使得exe立马退出
-end start
+    mov f,eax
+
+    invoke crt_printf, SADD("%d",0),f
+    ret
+main  ENDP
+
+WaitKeyCrt PROC 
+    invoke crt_printf, SADD(13,10,"Press any key to continue...")
+    invoke crt__getch
+    .if (eax == 0) || (eax == 0E0h)
+        invoke crt__getch
+    .endif
+    invoke crt_printf, OFFSET newline    
+    ret
+WaitKeyCrt ENDP
+
+END start
